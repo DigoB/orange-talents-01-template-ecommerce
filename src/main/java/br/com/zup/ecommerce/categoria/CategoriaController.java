@@ -1,10 +1,10 @@
 package br.com.zup.ecommerce.categoria;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
@@ -19,9 +19,10 @@ public class CategoriaController {
 
     @PostMapping
     @Transactional
-    public String criaCategoria(@RequestBody @Valid NovaCategoriaRequest request) {
+    public ResponseEntity<?> criaCategoria(@RequestBody @Valid NovaCategoriaRequest request) {
         Categoria novaCategoria = request.paraCategoria(manager);
         manager.persist(novaCategoria);
-        return novaCategoria.toString();
+
+        return ResponseEntity.ok().build();
     }
 }

@@ -5,11 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.Valid;
+import java.net.URI;
 
 @RestController
-@RequestMapping("/usuario")
+@RequestMapping("/usuarios")
 public class UsuarioController {
 
     @Autowired
@@ -24,10 +26,12 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public void cadastraUsuario(@RequestBody @Valid UsuarioRequest request) {
+    public ResponseEntity<?> cadastraUsuario(@RequestBody @Valid UsuarioRequest request, UriComponentsBuilder uriBuilder) {
         Usuario novoUsuario = request.paraUsuario();
 
         usuarioRepository.save(novoUsuario);
 
+        URI uri = uriBuilder.path("/usuarios/{id}").buildAndExpand(novoUsuario.getId()).toUri();
+        return ResponseEntity.ok().build();
     }
 }
