@@ -23,6 +23,18 @@ public class Categoria {
         this.nome = nome;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public Categoria getCategoriaMae() {
+        return categoriaMae;
+    }
+
     public void setMae(Categoria categoriaMae) {
         this.categoriaMae = categoriaMae;
     }

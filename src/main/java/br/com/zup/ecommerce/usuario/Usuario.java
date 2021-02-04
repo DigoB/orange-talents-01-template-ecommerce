@@ -36,6 +36,7 @@ public class Usuario implements UserDetails {
     @ManyToMany(fetch = FetchType.EAGER)
     private List<Perfil> perfis = new ArrayList<>();
 
+    @Deprecated
     public Usuario() {
     }
 
@@ -64,9 +65,8 @@ public class Usuario implements UserDetails {
     public String toString() {
         return "Usuario{" +
                 "id=" + id +
-                ", email='" + email + '\'' +
-                ", senha='" + senha + '\'' +
-                ", dataCriacao=" + dataCriacao +
+                ", email='" + email + '\''
+                + ", dataCriacao=" + dataCriacao +
                 '}';
     }
 
