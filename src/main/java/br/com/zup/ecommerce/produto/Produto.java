@@ -2,18 +2,17 @@ package br.com.zup.ecommerce.produto;
 
 import br.com.zup.ecommerce.categoria.Categoria;
 import br.com.zup.ecommerce.usuario.Usuario;
-import br.com.zup.ecommerce.validators.ValorUnico;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.util.Assert;
+
 import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
@@ -40,55 +39,64 @@ public class Produto {
     @NonNull
     @Valid
     @ManyToOne
-    private Usuario dono;
+    private Usuario usuario;
     private LocalDateTime dataCadastro = LocalDateTime.now();
     @OneToMany(mappedBy = "produto", cascade = CascadeType.PERSIST)
+    @NotNull
+    @Size(min = 3)
+    @Valid
     private Set<ValorProduto> valores = new HashSet<>();
+    @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL)
+    private Set<Opinioes> opinioes = new HashSet<>();
+    @OneToMany(mappedBy = "produto", cascade = CascadeType.MERGE)
+    private Set<ImagemProduto> imagens = new HashSet<>();
 
     @Deprecated
-    public Produto() {}
+    public Produto() {
+    }
 
-    public Produto(@NotBlank String nome, @NotNull @Positive BigDecimal preco,
-                   @Positive Integer quantidadeEmEstoque, @NotBlank @Length(max = 1000) String descricao,
-                   @NotNull @Valid Categoria categoria, @NotNull @Valid Usuario dono,
-                   @Size(min = 3) @Valid Collection<NovoValorRequest> valores) {
+    public Produto(@NotBlank String nome, @NotNull @Positive BigDecimal preco, @Positive Integer quantidadeEmEstoque,
+                   @NotBlank @Length(max = 1000) String descricao, Categoria categoria, Usuario usuario,
+                   @NotNull @Size(min = 3) @Valid Collection<NovoValorRequest> valores, Collection<OpiniaoForm> opinioes) {
         this.nome = nome;
         this.preco = preco;
         this.quantidadeEmEstoque = quantidadeEmEstoque;
         this.descricao = descricao;
         this.categoria = categoria;
-        this.dono = dono;
-        this.valores.addAll(valores.stream().map(valor -> valor.paraProduto(this)).collect(Collectors.toSet()));
+        this.usuario = usuario;
+        this.valores.addAll(valores.stream().map(valor -> valor.paraProduto(this))
+                .collect(Collectors.toSet()));
+        this.opinioes.addAll(opinioes.stream().map(opiniao -> opiniao.novaOpiniao(this,this.usuario))
+                .collect(Collectors.toSet()));
 
         Assert.isTrue(this.valores.size() >= 3, "Todo produto deve ter pelo menos 3 valores!");
+    }
+
+    public Produto(String nome, BigDecimal preco, Integer quantidadeEmEstoque, String descricao, Categoria categoria,
+                   Usuario usuario,  Collection<NovoValorRequest> valores) {
+        this.nome = nome;
+        this.preco = preco;
+        this.quantidadeEmEstoque = quantidadeEmEstoque;
+        this.descricao = descricao;
+        this.categoria = categoria;
+        this.usuario = usuario;
+        this.valores.addAll(valores.stream().map(valor -> valor.paraProduto(this))
+                .collect(Collectors.toSet()));
     }
 
     public Long getId() {
         return id;
     }
 
-    public String getNome() {
-        return nome;
+    @NonNull
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public BigDecimal getPreco() {
-        return preco;
-    }
-
-    public Integer getQuantidadeEmEstoque() {
-        return quantidadeEmEstoque;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public Categoria getCategoria() {
-        return categoria;
-    }
-
-    public LocalDateTime getDataCadastro() {
-        return dataCadastro;
+    public void associaImagens(Set<String> links) {
+        Set<ImagemProduto> imagens = links.stream().map(link -> new ImagemProduto(this, link))
+                .collect(Collectors.toSet());
+        this.imagens.addAll(imagens);
     }
 
     @Override
@@ -100,9 +108,21 @@ public class Produto {
                 ", quantidadeEmEstoque=" + quantidadeEmEstoque +
                 ", descricao='" + descricao + '\'' +
                 ", categoria=" + categoria +
-                ", dono=" + dono +
+                ", dono=" + usuario +
                 ", dataCadastro=" + dataCadastro +
                 ", valores=" + valores +
+                ", imagens=" + imagens +
                 '}';
     }
+
+    public void validarOpinadorTrue(String email, String mensagem) {
+        if (email.equals(this.usuario.getEmail())) {
+            throw new BadCredentialsException(mensagem);
+        }
+    }
+
+    public void criaOpiniao(Opinioes paraOpiniao) {
+        this.opinioes.add((Opinioes) opinioes);
+    }
+
 }

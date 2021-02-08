@@ -28,10 +28,6 @@ public class UsuarioRequest {
         return email;
     }
 
-    public String getSenha() {
-        return senha;
-    }
-
     public Usuario paraUsuario() {
         return new Usuario(email,senha);
     }

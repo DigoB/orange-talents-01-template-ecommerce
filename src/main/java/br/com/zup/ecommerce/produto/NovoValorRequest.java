@@ -1,8 +1,6 @@
 package br.com.zup.ecommerce.produto;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 public class NovoValorRequest {
 
@@ -33,7 +31,7 @@ public class NovoValorRequest {
                 '}';
     }
 
-    public ValorProduto paraProduto(@NotNull @Valid Produto produto) {
+    public ValorProduto paraProduto(Produto produto) {
         return new ValorProduto(nome,descricao,produto);
     }
 }
